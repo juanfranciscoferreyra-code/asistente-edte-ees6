@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente EDTE | Régimen Académico Secundaria — E.E.S. N° 6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        html, body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            max-width: 100%;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header Institucional E.E.S. N° 6 -->
+    <header class="bg-gradient-to-r from-sky-950 via-sky-900 to-teal-800 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-baseline gap-2">
+                        <h1 class="text-lg sm:text-xl font-bold tracking-tight">
+                            Asistente EDTE — Régimen Académico Secundaria
+                            <span class="text-xs font-normal text-sky-200 ml-1">(Disp. 40/26 y Res. 1650/24)</span>
+                        </h1>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/15 border border-white/20 text-sky-100">E.E.S. N° 6</span>
+                    </div>
+                    <p class="text-xs text-sky-200 mt-0.5">Equipo de Definición de Trayectorias Educativas • E.E.S. N° 6</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleModalNormativa()" class="flex items-center gap-2 text-xs sm:text-sm bg-white/10 hover:bg-white/20 transition px-3.5 py-2 rounded-xl font-medium border border-white/15">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span>Guía Normativa</span>
+                </button>
+                <button onclick="abrirVistaActa()" id="btnWordHeader" class="hidden sm:flex items-center gap-2 text-xs sm:text-sm bg-white text-sky-900 hover:bg-sky-50 transition px-3.5 py-2 rounded-xl font-bold shadow-sm">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Abrir Acta / Word</span>
+                </button>
+                <button onclick="exportarActa()" id="btnExportarHeader" class="hidden sm:flex items-center gap-2 text-xs sm:text-sm bg-teal-500 hover:bg-teal-400 text-slate-950 transition px-3.5 py-2 rounded-xl font-semibold shadow-sm">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    <span>Copiar Texto</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container (Columna única) -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+
+        <!-- Bloque Superior: Carga por Voz, Contexto y Materias -->
+        <div class="w-full space-y-6">
+
+            <!-- Módulo de Carga por Voz / Lenguaje Natural -->
+            <section id="panelCargaVoz" class="glass-card rounded-2xl p-5 shadow-md border-2 border-sky-200 bg-gradient-to-br from-sky-50/90 to-white">
+                <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-sky-100">
+                    <div class="flex items-center gap-2">
+                        <span class="p-1.5 rounded-lg bg-sky-700 text-white">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
+                        </span>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-sm">Dictado Inteligente por Voz</h2>
+                            <p class="text-[11px] text-slate-500">Hablá de corrido para cargar año, orientación y materias pendientes</p>
+                        </div>
+                    </div>
+                    <span id="estadoMicrofonoBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
+                        Listo
+                    </span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="btnIniciarVoz" onclick="alternarReconocimientoVoz()" class="flex-1 min-w-[180px] py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="mic" id="iconMicBtn" class="w-4 h-4"></i>
+                            <span id="textoMicBtn">Dictar caso por micrófono</span>
+                        </button>
+                        <button type="button" onclick="procesarComandoTexto()" class="py-2.5 px-3.5 bg-sky-700 hover:bg-sky-800 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-1.5" title="Cargar los datos detectados en el texto">
+                            <i data-lucide="wand-2" class="w-4 h-4"></i>
+                            <span>Cargar ahora</span>
+                        </button>
+                    </div>
+
+                    <div>
+                        <textarea id="transcripcionVoz" rows="3" oninput="procesarComandoTextoDebounced()" placeholder='Ej: "Alumno de tercer año de ciclo básico con asistencia sostenida, debe Matemática e Inglés de segundo año y debe Historia de tercer año, cargamelo en transición 2027"'
+                            class="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 transition leading-relaxed"></textarea>
+                    </div>
+
+                    <div id="feedbackVoz" class="hidden text-[11px] p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-900"></div>
+                </div>
+            </section>
+
+            <!-- 1. Contexto del Estudiante -->
+            <section class="glass-card rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                    <i data-lucide="sliders" class="w-5 h-5 text-sky-700"></i>
+                    <h2 class="font-bold text-slate-800 text-base">1. Contexto del Caso — E.E.S. N° 6</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Nombre Estudiante con recomendación de iniciales -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Estudiante (Opcional — Se recomienda usar iniciales)</label>
+                        <input type="text" id="studentName" placeholder="Ej: G., V. o M., L. (preferible a nombre completo)" oninput="recalcularTodo()"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition">
+                        <p class="text-[11px] text-amber-800 bg-amber-50/80 border border-amber-200/80 rounded-lg px-2.5 py-1.5 mt-1.5 leading-relaxed">
+                            <strong>Aviso sobre nombres y datos de estudiantes:</strong> Se recomienda ingresar <strong>iniciales</strong> en lugar del nombre completo para mayor resguardo y confidencialidad (especialmente en estudiantes menores de edad), completando el nombre completo recién en el registro institucional oficial cuando corresponda.
+                        </p>
+                    </div>
+
+                    <!-- Año que acaba de cursar -->
+                    <div id="boxAnioCursada">
+                        <label class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                            <span>Año que finalizó de cursar</span>
+                            <span id="badgeCicloNivel" class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">Ciclo Superior</span>
+                        </label>
+                        <select id="anioCursado" onchange="gestionarCambioAnioCursado()" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="1">1° Año (Ciclo Básico — Avanza a 2°)</option>
+                            <option value="2">2° Año (Ciclo Básico — Avanza a 3°)</option>
+                            <option value="3">3° Año (Ciclo Básico — Avanza a 4°)</option>
+                            <option value="4" selected>4° Año (Ciclo Superior — Avanza a 5°)</option>
+                            <option value="5">5° Año (Ciclo Superior — Avanza a 6°)</option>
+                            <option value="6">6° Año (Ciclo Superior — Egreso)</option>
+                        </select>
+                    </div>
+
+                    <!-- Orientación del Ciclo Superior -->
+                    <div id="boxOrientacion">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Orientación (4° a 6° Año)</label>
+                            <span id="avisoSinOrientacion" class="hidden text-[11px] font-medium text-slate-400">No aplica en Ciclo Básico (1° a 3°)</span>
+                        </div>
+                        <div id="gridOrientacion" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 transition-opacity">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="orientacion" value="CS_SOCIALES" checked onchange="recalcularTodo()" class="peer sr-only">
+                                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-sky-50 peer-checked:border-sky-600 peer-checked:text-sky-900 transition text-center">
+                                    <div class="font-bold text-xs sm:text-sm">Ciencias Sociales</div>
+                                    <div class="text-[10px] text-slate-500 peer-checked:text-sky-700 mt-0.5">Ciclo Superior • E.E.S. N° 6</div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="orientacion" value="CS_NATURALES" onchange="recalcularTodo()" class="peer sr-only">
+                                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-sky-50 peer-checked:border-sky-600 peer-checked:text-sky-900 transition text-center">
+                                    <div class="font-bold text-xs sm:text-sm">Ciencias Naturales</div>
+                                    <div class="text-[10px] text-slate-500 peer-checked:text-sky-700 mt-0.5">Ciclo Superior • E.E.S. N° 6</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Período / Regla de Aplicación -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Ciclo Lectivo de Evaluación</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="ciclo" value="TRANSICION_2027" checked onchange="recalcularTodo()" class="peer sr-only">
+                                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-950 transition">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-xs sm:text-sm">Transición 2026→2027</span>
+                                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-500 mt-1 leading-tight">Con 5+ pendientes, el EDTE elige cuáles recursa (sin tope fijo en Comisión Evaluadora). Com. Eval. en Agosto.</div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="ciclo" value="PLENO_2028" onchange="recalcularTodo()" class="peer sr-only">
+                                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-teal-50 peer-checked:border-teal-600 peer-checked:text-teal-950 transition">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-xs sm:text-sm">Régimen Pleno 2028+</span>
+                                        <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-500 mt-1 leading-tight">Con 5+ pendientes recursa TODAS. Comisiones en Ago / Dic / Mar.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Carga de Materias Pendientes de Acreditación -->
+            <section class="glass-card rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="book-plus" class="w-5 h-5 text-sky-700"></i>
+                        <h2 class="font-bold text-slate-800 text-base">2. Materias Pendientes de Acreditación</h2>
+                    </div>
+                    <button type="button" onclick="cargarEjemplo()" class="text-xs font-semibold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded-lg transition">
+                        Cargar ejemplo
+                    </button>
+                </div>
+
+                <form onsubmit="agregarMateria(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                        <div class="sm:col-span-4 min-w-0">
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Año origen</label>
+                            <select id="matAnio" onchange="actualizarMateriasSugeridas()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <option value="1°">1° Año</option>
+                                <option value="2°">2° Año</option>
+                                <option value="3°" selected>3° Año</option>
+                                <option value="4°">4° Año</option>
+                                <option value="5°">5° Año</option>
+                                <option value="6°">6° Año</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-8 min-w-0">
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Materia / Espacio curricular adeudado</label>
+                            <input type="text" id="matNombre" list="sugerenciasMaterias" placeholder="Ej: Matemática o escribí la materia..." required
+                                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition">
+                            <datalist id="sugerenciasMaterias"></datalist>
+                        </div>
+                    </div>
+
+                    <!-- Condición de presencialidad -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Asistencia Institucional, por Materia e Intensificación</label>
+
+                        <div class="grid grid-cols-1 gap-2">
+                            <label class="flex items-start gap-2.5 p-3 rounded-xl bg-teal-50/70 border border-teal-200 cursor-pointer hover:bg-teal-50 transition min-w-0">
+                                <input type="radio" name="condicionAsistencia" id="condTrayectoriaSostenida" value="SOSTENIDA" checked class="mt-0.5 shrink-0 text-teal-600 focus:ring-teal-500">
+                                <span class="text-xs text-teal-950 leading-relaxed min-w-0 break-words">
+                                    <strong>Trayectoria sostenida (Por defecto):</strong> No alcanzó el límite de 28 faltas institucionales, o lo alcanzó/superó y al computar la asistencia por materia tuvo al menos el 75% (o tuvo menos del 75% pero <strong>sí asistió a intensificación</strong>).
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2.5 p-3 rounded-xl bg-rose-50/70 border border-rose-200 cursor-pointer hover:bg-rose-50 transition min-w-0">
+                                <input type="radio" name="condicionAsistencia" id="condAbandono" value="ABANDONO" class="mt-0.5 shrink-0 text-rose-600 focus:ring-rose-500">
+                                <span class="text-xs text-rose-950 leading-relaxed min-w-0 break-words">
+                                    <strong>Sin presencialidad mínima en la materia ni intensificación:</strong> Alcanzó o superó el límite de <strong>28 inasistencias institucionales</strong>, luego se computó la asistencia por materia y tuvo <strong>menos del 75% anual en esa materia Y tampoco asistió a intensificación</strong> (recursado obligatorio aunque sea 1 sola, salvo definición expresa del EDTE en Transición 2026–2027).
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 px-4 bg-sky-700 hover:bg-sky-800 text-white font-semibold text-sm rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4 shrink-0"></i>
+                        <span>Agregar materia adeudada</span>
+                    </button>
+                </form>
+
+                <!-- Lista de materias cargadas -->
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            Pendientes cargadas (<span id="countMaterias">0</span>)
+                        </span>
+                        <button type="button" id="btnLimpiar" onclick="limpiarMaterias()" class="hidden text-xs font-semibold text-rose-600 hover:text-rose-800">
+                            Vaciar lista
+                        </button>
+                    </div>
+                    <div id="listaMateriasContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+                </div>
+            </section>
+
+            <!-- 3. Simulador de Carga Anual (Cursada del Año Siguiente + Recursadas) -->
+            <section class="glass-card rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-5 h-5 text-sky-700"></i>
+                        <h2 class="font-bold text-slate-800 text-base">3. Simulador de Carga Anual y Tope de 12 Materias</h2>
+                    </div>
+                    <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                        Tope curricular: 12 materias/año
+                    </span>
+                </div>
+
+                <div class="space-y-4 text-xs text-slate-700">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                                Materias nuevas del año siguiente a cursar
+                            </label>
+                            <input type="number" id="cantCursadasAnioSig" min="0" max="15" value="8" oninput="recalcularTodo()"
+                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-center">
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Total anual estimado</span>
+                            <div class="flex items-baseline gap-2 mt-0.5">
+                                <span id="resumenCargaAnualTotal" class="text-xl font-extrabold text-sky-900">8 materias</span>
+                                <span id="badgeEstadoCargaAnual" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">Dentro del tope</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="detalleSimuladorCargaAnual" class="p-3 rounded-xl bg-sky-50/70 border border-sky-200/80 text-slate-700 leading-relaxed">
+                        Cargá materias pendientes para calcular la carga anual combinada entre materias nuevas del año siguiente y materias a recursar.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Bloque Inferior: Diagnóstico Normativo y Opciones del EDTE -->
+        <div class="w-full space-y-6">
+
+            <!-- Estado Vacío Inicial -->
+            <div id="emptyStateResult" class="glass-card rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[420px]">
+                <div class="w-16 h-16 bg-sky-100 text-sky-700 rounded-2xl flex items-center justify-center mb-4">
+                    <i data-lucide="scale" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Simulador de Trayectorias Educativas — E.E.S. N° 6</h3>
+                <p class="text-sm text-slate-500 max-w-md mb-6 leading-relaxed">
+                    Cargá las materias pendientes de acreditación del estudiante (finalizada la intensificación de febrero) para obtener el encuadre según la <strong>Res. 1650/24</strong> y las adecuaciones de la <strong>Disp. 40/26</strong>.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg text-left">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                        <div class="font-bold text-xs text-sky-800 mb-1">Hasta 4 Pendientes</div>
+                        <p class="text-[11px] text-slate-500">Van a Comisión Evaluadora Institucional (con acompañamiento previo).</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                        <div class="font-bold text-xs text-amber-800 mb-1">5 o Más Pendientes</div>
+                        <p class="text-[11px] text-slate-500">En 2027 el EDTE elige cuáles recursa (sin tope fijo en Comisión). En 2028+ recursa todas.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                        <div class="font-bold text-xs text-rose-800 mb-1">Regla de Asistencia</div>
+                        <p class="text-[11px] text-slate-500">Sin asistencia mínima ni intensificación, recursa aunque sea 1 sola (salvo definición EDTE en Transición 2026–2027).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resultados Dinámicos -->
+            <div id="resultsContainer" class="hidden space-y-6 animate-fade-in">
+
+                <!-- Tarjeta Resumen de Situación -->
+                <div id="summaryBanner" class="rounded-2xl p-6 text-white shadow-md transition-all">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="space-y-1.5 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span id="badgeRegla" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/20"></span>
+                                <span id="badgeOrientacion" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-black/20"></span>
+                            </div>
+                            <h3 id="summaryTitle" class="text-lg sm:text-xl font-extrabold tracking-tight"></h3>
+                            <p id="summarySubtitle" class="text-xs sm:text-sm text-white/90 leading-relaxed"></p>
+                        </div>
+                        <div class="shrink-0 bg-white/15 backdrop-blur-xs rounded-2xl px-4 py-3 text-center border border-white/20">
+                            <div id="statTotal" class="text-3xl font-black leading-none">0</div>
+                            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/85 mt-1">Pendientes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas Normativas Específicas -->
+                <div id="alertasContainer" class="space-y-3"></div>
+
+                <!-- Opciones del EDTE -->
+                <section class="glass-card rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+                        <i data-lucide="git-branch" class="w-5 h-5 text-sky-700"></i>
+                        <h3 class="font-bold text-slate-800 text-base">Opciones de Trayectoria para el EDTE</h3>
+                    </div>
+                    <div id="opcionesEdteContainer" class="space-y-3"></div>
+                </section>
+
+                <!-- Detalle Materia por Materia -->
+                <section class="glass-card rounded-2xl p-5 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-sky-700"></i>
+                            <h3 class="font-bold text-slate-800 text-base">Detalle por Materia</h3>
+                        </div>
+                        <span id="hintAsignacion" class="text-[11px] text-slate-500"></span>
+                    </div>
+                    <div id="desgloseMateriasContainer" class="space-y-2.5"></div>
+                </section>
+
+                <!-- Cronograma Institucional -->
+                <section class="glass-card rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+                        <i data-lucide="calendar" class="w-5 h-5 text-sky-700"></i>
+                        <h3 class="font-bold text-slate-800 text-base">Instancias y Cronograma Aplicable</h3>
+                    </div>
+                    <div id="cronogramaContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                </section>
+
+                <!-- Acciones Finales del Acta -->
+                <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div class="text-xs text-slate-500">
+                        Emití el borrador de acta institucional para revisar con el equipo o descargar en Word. Recordá utilizar iniciales en el campo del estudiante para resguardar sus datos.
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="abrirVistaActa()" class="flex-1 sm:flex-initial py-2.5 px-4 bg-sky-800 hover:bg-sky-900 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>Abrir Acta / Word</span>
+                        </button>
+                        <button type="button" onclick="exportarActa()" class="flex-1 sm:flex-initial py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>Copiar Dictamen</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Nota de Privacidad y Uso Responsable -->
+    <footer class="max-w-4xl w-full mx-auto px-4 sm:px-6 pb-8 pt-2">
+        <div class="p-3.5 rounded-xl bg-white/85 border border-slate-200/80 text-xs text-slate-600 leading-relaxed">
+            <strong class="text-slate-800">Privacidad y uso responsable:</strong> Todo el procesamiento ocurre de manera <strong>100% local en tu navegador</strong>; no se almacenan ni envían datos de estudiantes a servidores externos. Se recomienda consignar el nombre del estudiante en <strong>iniciales</strong> (en vez del nombre completo), evitar datos sensibles innecesarios y emplear el acta generada como borrador de apoyo del equipo de la <strong>E.E.S. N° 6</strong> conforme a la Res. 1650/24 y la Disp. 40/26.
+        </div>
+    </footer>
+
+    <!-- Modal Vista Previa de Acta -->
+    <div id="modalVistaActa" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+            <div class="px-5 py-3.5 bg-sky-950 text-white flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="file-check-2" class="w-5 h-5 text-teal-300"></i>
+                    <h3 class="font-bold text-sm sm:text-base">Acta EDTE Lista para Word / Editor de Texto</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="copiarActaEnriquecida()" class="text-xs bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg transition">
+                        Copiar con formato
+                    </button>
+                    <button type="button" onclick="descargarArchivoDocDataUri()" class="text-xs bg-sky-700 hover:bg-sky-600 text-white font-bold px-3 py-1.5 rounded-lg transition">
+                        Descargar .doc
+                    </button>
+                    <button type="button" onclick="imprimirActaModal()" class="text-xs bg-white/15 hover:bg-white/25 text-white font-semibold px-3 py-1.5 rounded-lg transition">
+                        Imprimir / PDF
+                    </button>
+                    <button type="button" onclick="cerrarVistaActa()" class="p-1.5 hover:bg-white/10 rounded-lg transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-5 sm:p-7 overflow-y-auto bg-slate-100/70">
+                <div id="contenidoActaDocumento" class="bg-white p-6 rounded-xl shadow-xs border border-slate-200 max-w-2xl mx-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Guía Normativa -->
+    <div id="modalNormativa" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+            <div class="px-5 py-4 bg-sky-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-5 h-5 text-sky-300"></i>
+                    <h3 class="font-bold text-base">Síntesis Normativa — Res. 1650/24 y Disp. 40/26</h3>
+                </div>
+                <button onclick="toggleModalNormativa()" class="p-1.5 hover:bg-white/10 rounded-lg transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                <div>
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Documentos Normativos Oficiales (Google Drive)</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="p-3.5 rounded-2xl bg-slate-100/90 hover:bg-slate-200/70 border border-slate-200/90 transition flex flex-col justify-between gap-3 min-w-0">
+                            <div onclick="abrirVisorDocumento('DISP_40_26')" class="cursor-pointer flex items-start gap-3 min-w-0">
+                                <div class="w-10 h-11 rounded-xl bg-rose-600 text-white flex flex-col items-center justify-center shrink-0 shadow-2xs">
+                                    <span class="text-[10px] font-extrabold tracking-wider">PDF</span>
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5 mt-0.5 opacity-90"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">PDF • Doc. 1</span>
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">Drive vinculado</span>
+                                    </div>
+                                    <div class="font-semibold text-xs sm:text-sm text-slate-900 leading-snug break-words mt-0.5">
+                                        Adecuaciones y modificaciones del Régimen Académico (Disp. 40/26)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 pt-2 border-t border-slate-200/80">
+                                <button type="button" onclick="abrirVisorDocumento('DISP_40_26')" class="flex-1 py-2 px-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5 shrink-0"></i>
+                                    <span>Ver PDF</span>
+                                </button>
+                                <button type="button" onclick="descargarDocumentoPdfDirecto('DISP_40_26')" class="flex-1 py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs">
+                                    <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
+                                    <span>Descargar</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-slate-100/90 hover:bg-slate-200/70 border border-slate-200/90 transition flex flex-col justify-between gap-3 min-w-0">
+                            <div onclick="abrirVisorDocumento('RES_1650_24')" class="cursor-pointer flex items-start gap-3 min-w-0">
+                                <div class="w-10 h-11 rounded-xl bg-rose-600 text-white flex flex-col items-center justify-center shrink-0 shadow-2xs">
+                                    <span class="text-[10px] font-extrabold tracking-wider">PDF</span>
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5 mt-0.5 opacity-90"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">PDF • Doc. 2</span>
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">Drive vinculado</span>
+                                    </div>
+                                    <div class="font-semibold text-xs sm:text-sm text-slate-900 leading-snug break-words mt-0.5">
+                                        Régimen Académico Educación Secundaria (Res. 1650/24)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 pt-2 border-t border-slate-200/80">
+                                <button type="button" onclick="abrirVisorDocumento('RES_1650_24')" class="flex-1 py-2 px-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5 shrink-0"></i>
+                                    <span>Ver PDF</span>
+                                </button>
+                                <button type="button" onclick="descargarDocumentoPdfDirecto('RES_1650_24')" class="flex-1 py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs">
+                                    <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
+                                    <span>Descargar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-sky-900 mb-1">1. Tope de 4 Materias Pendientes</h4>
+                    <p>Hasta <strong>4 materias pendientes</strong> acreditan en Comisiones Evaluadoras Institucionales con acompañamiento previo. Con <strong>5 o más materias</strong>, en la Transición 2026–2027 el EDTE define cuáles recursa (sin tope fijo en Comisión Evaluadora, emitiendo aviso escrito al superar 4) y desde el Régimen Pleno 2028+ recursa la totalidad.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sky-900 mb-1">2. Tope Máximo de 12 Materias Anuales</h4>
+                    <p>Entre cursado regular del año siguiente y materias a recursar se mantiene el tope máximo de <strong>12 materias anuales</strong>.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sky-900 mb-1">3. Asistencia Institucional, por Materia y Regla de Presencialidad</h4>
+                    <p>Superar las <strong>28 inasistencias institucionales</strong> habilita el cómputo del <strong>75% de asistencia por materia</strong>. Recursa obligatoriamente (sin importar la cantidad de pendientes) si no acredita, no llega al 75% en la materia y no asiste a intensificación (Disp. 40/26, p. 2.3), salvo en Transición 2026–2027 , donde sin importar cuantas pendientes,  prima la definición del EDTE (apartado 3 y Res. 1650/24, Anexo 5 p. 13).</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sky-900 mb-1">4. Prioridad Horaria y Egreso con Pendientes</h4>
+                    <p>En <strong>2° a 5° año</strong>, ante superposición horaria se priorizan las <strong>recursadas</strong> (o contraturno dentro del tope de 12). En <strong>6° año</strong>, se priorizan las <strong>materias nuevas de 6°</strong>, sin que ello implique egreso automático si quedan pendientes (que continúan en intensificación y <strong>Comisiones Evaluadoras desde abril</strong>), sin perjuicio de las opciones del EDTE de <strong>año exclusivo de recursado</strong> o <strong>acompañamiento EOE</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Visor de Documentos Normativos -->
+    <div id="modalVisorDocumento" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-5">
+        <div class="bg-slate-800 rounded-2xl max-w-5xl w-full h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in border border-slate-700">
+            <div class="px-4 py-3 bg-slate-950 text-white flex items-center justify-between gap-2 shrink-0 border-b border-slate-800">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-extrabold text-[10px] shrink-0">PDF</div>
+                    <div class="min-w-0">
+                        <h3 id="tituloVisorDoc" class="font-bold text-xs sm:text-sm truncate">Documento Normativo</h3>
+                        <p id="subtituloVisorDoc" class="text-[10px] sm:text-[11px] text-slate-400 truncate"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" onclick="descargarDocumentoActual()" class="text-xs bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-xs">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Descargar PDF</span>
+                    </button>
+                    <button type="button" onclick="cerrarVisorDocumento()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition" title="Cerrar visor">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-3 py-2 bg-slate-900 border-b border-slate-700 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div class="inline-flex rounded-xl bg-slate-800 p-1 border border-slate-700">
+                    <button type="button" id="tabDoc40" onclick="cambiarPestanaDocumento('DISP_40_26')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition bg-rose-600 text-white">
+                        Disp. 40/26
+                    </button>
+                    <button type="button" id="tabDoc1650" onclick="cambiarPestanaDocumento('RES_1650_24')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition text-slate-300 hover:bg-slate-700">
+                        Res. 1650/24
+                    </button>
+                </div>
+            </div>
+
+            <div id="contenedorScrollPdf" class="flex-grow overflow-auto bg-slate-700/90 p-3 sm:p-6 flex flex-col items-center gap-4">
+                <div id="paginasPdfContainer" class="flex flex-col items-center gap-4 w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs sm:text-sm font-medium px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-teal-400 shrink-0"></i>
+        <span id="toastMsg">Listo</span>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const MATERIAS_BASE_EESS6 = {
+            '1°': [
+                'Prácticas del Lenguaje', 'Matemática', 'Ciencias Sociales', 'Ciencias Naturales',
+                'Educación Artística', 'Educación Física', 'Inglés', 'Construcción de Ciudadanía'
+            ],
+            '2°': [
+                'Prácticas del Lenguaje', 'Matemática', 'Historia', 'Geografía', 'Biología',
+                'Físico-Química', 'Educación Artística', 'Educación Física', 'Inglés', 'Construcción de Ciudadanía'
+            ],
+            '3°': [
+                'Prácticas del Lenguaje', 'Matemática', 'Historia', 'Geografía', 'Biología',
+                'Físico-Química', 'Educación Artística', 'Educación Física', 'Inglés', 'Construcción de Ciudadanía'
+            ],
+            '4°': [
+                'Literatura', 'Matemática', 'Historia', 'Geografía', 'Biología',
+                'Introducción a la Física', 'Inglés', 'Educación Física', 'Salud y Adolescencia',
+                'NTICx', 'Psicología', 'Sociología', 'Introducción a la Comunicación'
+            ],
+            '5°': [
+                'Literatura', 'Matemática', 'Historia', 'Geografía', 'Introducción a la Química',
+                'Inglés', 'Educación Física', 'Política y Ciudadanía', 'Economía Política',
+                'Comunicación, Cultura y Sociedad', 'Observatorio de Medios', 'Sociología'
+            ],
+            '6°': [
+                'Literatura', 'Matemática', 'Historia', 'Geografía', 'Inglés', 'Educación Física',
+                'Trabajo y Ciudadanía', 'Arte', 'Filosofía', 'Proyectos de Investigación en Ciencias Sociales',
+                'Taller de Producción en Lenguajes', 'Taller de Comunicación Institucional y Comunitaria'
+            ]
+        };
+
+        let materias = [];
+        let opcionSeleccionadaId = 'OP_DEFAULT';
+        let reconocimiento = null;
+        let escuchandoVoz = false;
+        let timerProcesarVoz = null;
+
+        function gestionarCambioAnioCursado() {
+            const anioCursado = parseInt(document.getElementById('anioCursado').value, 10);
+            const esCicloBasico = anioCursado <= 3;
+            const badgeCiclo = document.getElementById('badgeCicloNivel');
+            const avisoSinOri = document.getElementById('avisoSinOrientacion');
+            const gridOri = document.getElementById('gridOrientacion');
+            const radiosOri = document.querySelectorAll('input[name="orientacion"]');
+
+            if (esCicloBasico) {
+                badgeCiclo.textContent = 'Ciclo Básico';
+                badgeCiclo.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800';
+                avisoSinOri.classList.remove('hidden');
+                gridOri.classList.add('opacity-50', 'pointer-events-none');
+                radiosOri.forEach(r => r.disabled = true);
+            } else {
+                badgeCiclo.textContent = 'Ciclo Superior';
+                badgeCiclo.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800';
+                avisoSinOri.classList.add('hidden');
+                gridOri.classList.remove('opacity-50', 'pointer-events-none');
+                radiosOri.forEach(r => r.disabled = false);
+            }
+
+            actualizarMateriasSugeridas();
+            recalcularTodo();
+        }
+
+        function actualizarMateriasSugeridas() {
+            const anioMat = document.getElementById('matAnio').value;
+            const datalist = document.getElementById('sugerenciasMaterias');
+            if (!datalist) return;
+            const lista = MATERIAS_BASE_EESS6[anioMat] || [];
+            datalist.innerHTML = lista.map(m => `<option value="${escapeHtml(m)}"></option>`).join('');
+        }
+
+        function agregarMateria(event) {
+            event.preventDefault();
+            const anio = document.getElementById('matAnio').value;
+            const nombreInput = document.getElementById('matNombre');
+            const nombre = nombreInput.value.trim();
+            if (!nombre) return;
+
+            const abandonoPresencialidad = document.getElementById('condAbandono').checked;
+
+            materias.push({
+                id: 'mat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                anio,
+                nombre,
+                abandonoPresencialidad,
+                decisionEdteTransicion: 'RECURSAR'
+            });
+
+            nombreInput.value = '';
+            recalcularTodo();
+        }
+
+        function eliminarMateria(id) {
+            materias = materias.filter(m => m.id !== id);
+            recalcularTodo();
+        }
+
+        function cambiarDecisionMateria(id, decision) {
+            const mat = materias.find(m => m.id === id);
+            if (mat) {
+                mat.decisionEdteTransicion = decision;
+                recalcularTodo();
+            }
+        }
+
+        function limpiarMaterias() {
+            materias = [];
+            recalcularTodo();
+        }
+
+        function cargarEjemplo() {
+            document.getElementById('studentName').value = 'P., M.';
+            document.getElementById('anioCursado').value = '4';
+            document.querySelector('input[name="orientacion"][value="CS_SOCIALES"]').checked = true;
+            document.querySelector('input[name="ciclo"][value="TRANSICION_2027"]').checked = true;
+            gestionarCambioAnioCursado();
+
+            materias = [
+                { id: 'ex_1', anio: '2°', nombre: 'Matemática', abandonoPresencialidad: false, decisionEdteTransicion: 'RECURSAR' },
+                { id: 'ex_2', anio: '3°', nombre: 'Historia', abandonoPresencialidad: false, decisionEdteTransicion: 'COMISION' },
+                { id: 'ex_3', anio: '3°', nombre: 'Inglés', abandonoPresencialidad: true, decisionEdteTransicion: 'RECURSAR' },
+                { id: 'ex_4', anio: '4°', nombre: 'Literatura', abandonoPresencialidad: false, decisionEdteTransicion: 'COMISION' },
+                { id: 'ex_5', anio: '4°', nombre: 'Sociología', abandonoPresencialidad: false, decisionEdteTransicion: 'RECURSAR' }
+            ];
+            recalcularTodo();
+            mostrarToast('Ejemplo de E.E.S. N° 6 cargado (5 materias en Transición 2027)');
+        }
+
+        function seleccionarOpcionEdte(idOpcion) {
+            opcionSeleccionadaId = idOpcion;
+            recalcularTodo();
+        }
+
+        function recalcularTodo() {
+            const anioCursado = parseInt(document.getElementById('anioCursado').value, 10);
+            const anioSiguiente = anioCursado < 6 ? anioCursado + 1 : null;
+            const esCicloBasico = anioCursado <= 3;
+            const orientacionVal = document.querySelector('input[name="orientacion"]:checked').value;
+            const labelOrientacion = esCicloBasico
+                ? 'Ciclo Básico'
+                : (orientacionVal === 'CS_SOCIALES' ? 'Ciclo Superior — Ciencias Sociales' : 'Ciclo Superior — Ciencias Naturales');
+            const ciclo = document.querySelector('input[name="ciclo"]:checked').value;
+
+            renderizarListaIzquierda();
+
+            const total = materias.length;
+            const superaTope = total > 4;
+
+            const evaluacionMaterias = materias.map(m => {
+                let estado = '';
+                let motivo = '';
+                let esObligatoriaRecursar = false;
+
+                if (m.abandonoPresencialidad) {
+                    estado = 'RECURSAR_OBLIGATORIO';
+                    motivo = 'Alcanzó o superó las 28 faltas institucionales, luego se computó la asistencia por materia (menos del 75% anual) y tampoco asistió a intensificación: recursado obligatorio con independencia del total de pendientes (Res. 1650/24 Anexo 4 inc. 7, 10 y 11 + Disp. 40/26 p. 2.3), salvo que en Transición 2026–2027 el EDTE defina otra trayectoria.';
+                    esObligatoriaRecursar = true;
+                } else if (ciclo === 'TRANSICION_2027') {
+                    if (superaTope) {
+                        estado = m.decisionEdteTransicion === 'COMISION' ? 'COMISION_TRANSICION' : 'RECURSAR_TRANSICION';
+                        motivo = 'Excepción Transición 2027: El EDTE define cuáles recursa y cuáles van a Comisión Evaluadora de agosto, sin tope fijo en Comisión Evaluadora (Disp. 40/26 apartado 3).';
+                    } else {
+                        estado = 'COMISION';
+                        motivo = 'Dentro del tope permitido (hasta 4 pendientes) y con trayectoria sostenida. Acredita en Comisión Evaluadora Institucional.';
+                    }
+                } else {
+                    if (!superaTope) {
+                        estado = 'COMISION';
+                        motivo = 'Dentro del tope permitido (hasta 4 pendientes) y con trayectoria sostenida. Acredita en Comisión Evaluadora Institucional.';
+                    } else {
+                        estado = 'RECURSAR_TOPE';
+                        motivo = `Régimen Pleno 2028+: Al adeudar ${total} materias (más de 4), debe recursar la totalidad.`;
+                    }
+                }
+
+                return { ...m, estado, motivo, esObligatoriaRecursar };
+            });
+
+            const cantRecursar = evaluacionMaterias.filter(m => m.estado.startsWith('RECURSAR')).length;
+            const cantComision = evaluacionMaterias.filter(m => m.estado.startsWith('COMISION')).length;
+            const tieneAbandono = evaluacionMaterias.some(m => m.abandonoPresencialidad);
+            const hayDecisionManualTransicion = ciclo === 'TRANSICION_2027' && superaTope && evaluacionMaterias.length > 0;
+
+            actualizarSimuladorCargaAnual(cantRecursar, anioSiguiente);
+
+            const emptyState = document.getElementById('emptyStateResult');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const btnExportHeader = document.getElementById('btnExportarHeader');
+            const btnWordHeader = document.getElementById('btnWordHeader');
+
+            if (materias.length === 0) {
+                emptyState.classList.remove('hidden');
+                resultsContainer.classList.add('hidden');
+                btnExportHeader.classList.add('hidden');
+                btnWordHeader.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            btnExportHeader.classList.remove('hidden');
+            btnWordHeader.classList.remove('hidden');
+
+            const banner = document.getElementById('summaryBanner');
+            const badgeRegla = document.getElementById('badgeRegla');
+            const badgeOrientacion = document.getElementById('badgeOrientacion');
+            const summaryTitle = document.getElementById('summaryTitle');
+            const summarySubtitle = document.getElementById('summarySubtitle');
+            document.getElementById('statTotal').textContent = total;
+
+            badgeOrientacion.textContent = labelOrientacion;
+            badgeRegla.textContent = ciclo === 'TRANSICION_2027' ? 'Transición 2026 → 2027' : 'Régimen Pleno 2028+';
+
+            if (!hayDecisionManualTransicion && !superaTope && cantRecursar === 0) {
+                banner.className = 'rounded-2xl p-6 text-white shadow-md bg-gradient-to-r from-teal-700 to-emerald-700';
+                summaryTitle.textContent = 'Acredita en Comisión Evaluadora Institucional';
+                const textoAvance = anioSiguiente
+                    ? `avanza al ${anioSiguiente}° año y rinde`
+                    : 'finaliza la cursada de 6° año y rinde';
+                summarySubtitle.textContent = `Adeuda ${total} materia(s) (dentro del límite de 4). No recursa ninguna materia; ${textoAvance} en Comisiones Evaluadoras con acompañamiento previo.`;
+            } else if (hayDecisionManualTransicion) {
+                banner.className = 'rounded-2xl p-6 text-white shadow-md bg-gradient-to-r from-sky-800 to-indigo-800';
+                summaryTitle.textContent = 'Intervención EDTE — Excepción Transición 2027';
+                const extraAbandono = tieneAbandono ? ' (incluyendo materias con regla de presencialidad)' : '';
+                summarySubtitle.textContent = `Supera el tope de 4 materias (${total} adeudadas). Por excepción de transición 2027, el EDTE define qué materias recursa (${cantRecursar}${extraAbandono}) y cuáles envía a Comisión Evaluadora de agosto (${cantComision}), sin tope fijo en Comisión Evaluadora.`;
+            } else if (!superaTope && cantRecursar > 0) {
+                banner.className = 'rounded-2xl p-6 text-white shadow-md bg-gradient-to-r from-amber-600 to-orange-700';
+                summaryTitle.textContent = cantComision > 0 ? 'Trayectoria Mixta por Regla Estricta de Presencialidad' : 'Recursado Obligatorio por Regla de Presencialidad';
+                summarySubtitle.textContent = cantComision > 0
+                    ? `Aunque adeuda ${total} materia(s) (dentro del tope de 4), tiene ${cantRecursar} materia(s) en recursado obligatorio y ${cantComision} en Comisión Evaluadora.`
+                    : `Por la regla estricta de presencialidad (menos del 75% de asistencia anual y sin asistencia a intensificación), debe recursar obligatoriamente las ${cantRecursar} materia(s) cargada(s).`;
+            } else {
+                banner.className = 'rounded-2xl p-6 text-white shadow-md bg-gradient-to-r from-rose-700 to-red-800';
+                summaryTitle.textContent = 'Recursado de la Totalidad de Pendientes';
+                summarySubtitle.textContent = `Al adeudar ${total} materias (más de 4) en Régimen Pleno 2028+, debe recursar las ${total} materias. El EDTE define la organización horaria.`;
+            }
+
+            const alertasContainer = document.getElementById('alertasContainer');
+            alertasContainer.innerHTML = '';
+
+            if (hayDecisionManualTransicion && cantComision > 4) {
+                alertasContainer.innerHTML += `
+                    <div class="p-4 rounded-xl bg-amber-50 border-2 border-amber-300 flex items-start gap-3">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i>
+                        <div class="text-xs text-amber-950 leading-relaxed">
+                            <strong class="font-bold block text-sm mb-0.5">
+                                Aviso escrito: Más de 4 materias asignadas a Comisión Evaluadora (${cantComision} seleccionadas — sin tope fijo en Transición 2026–2027)
+                            </strong>
+                            En la <strong>Transición 2026–2027</strong> no rige un tope fijo para enviar materias a Comisión Evaluadora (Disp. 40/26, apartado 3 y Res. 1650/24, Anexo 5 p. 13). Como se superaron las 4 materias en Comisión Evaluadora (${cantComision} materias), queda asentado este aviso escrito para que el EDTE consigne en el Acta la fundamentación pedagógica y los espacios de acompañamiento correspondientes.
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (cantRecursar > 0 || anioCursado === 6) {
+                if (anioCursado === 6 || anioSiguiente === 6) {
+                    alertasContainer.innerHTML += `
+                        <div class="p-4 rounded-xl bg-sky-50 border border-sky-200 flex items-start gap-3">
+                            <i data-lucide="clock" class="w-5 h-5 text-sky-700 shrink-0 mt-0.5"></i>
+                            <div class="text-xs text-sky-950 leading-relaxed">
+                                <strong class="font-bold block text-sm mb-0.5">
+                                    Prioridad Horaria y Egreso en 6° Año (Anexo 5 inc. 16 y 21 + Disp. 40/26 p. 2.2)
+                                </strong>
+                                En 6° año se priorizan las <strong>materias que se cursan por primera vez</strong> por sobre las recursadas, sin que ello implique egreso automático si quedan pendientes. Las materias cursadas en 6° año transitan intensificación en diciembre y febrero/marzo y luego pasan a <strong>Comisiones Evaluadoras desde abril</strong>; las pendientes previas de 1° a 5° van directo a <strong>Comisión Evaluadora Institucional</strong> (con acompañamiento previo).
+                            </div>
+                        </div>
+                    `;
+                } else if (anioSiguiente && anioSiguiente >= 2 && cantRecursar > 0) {
+                    alertasContainer.innerHTML += `
+                        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+                            <i data-lucide="clock" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i>
+                            <div class="text-xs text-amber-950 leading-relaxed">
+                                <strong class="font-bold block text-sm mb-0.5">
+                                    Prioridad Horaria en ${anioSiguiente}° Año: Materias a Recursar (Anexo 5 inc. 15)
+                                </strong>
+                                Si se superponen horarios entre materias a cursar y recursar, <strong>se priorizan las materias a recursar</strong> (salvo recursada a contraturno si la organización institucional lo permite y sin superar el tope de 12 materias anuales).
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            if (cantRecursar > 0 && anioSiguiente) {
+                alertasContainer.innerHTML += `
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
+                        <i data-lucide="layers" class="w-5 h-5 text-slate-600 shrink-0 mt-0.5"></i>
+                        <div class="text-xs text-slate-700 leading-relaxed">
+                            <strong class="font-bold block text-sm mb-0.5">
+                                Control de Tope de 12 Materias Anuales (Anexo 5 inc. 14)
+                            </strong>
+                            Entre materias cursadas de ${anioSiguiente}° año y las <strong>${cantRecursar} materia(s) a recursar</strong>, no se puede superar el tope máximo de <strong>12 materias anuales</strong>.
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (tieneAbandono) {
+                alertasContainer.innerHTML += `
+                    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+                        <div class="text-xs text-rose-900 leading-relaxed">
+                            <strong class="font-bold block text-sm mb-0.5">Recursado Obligatorio por Presencialidad e Intensificación (Anexo 4 inc. 7, 10 y 11 + Disp. 40/26 p. 2.3)</strong>
+                            Al alcanzar o superar el límite de <strong>28 inasistencias institucionales</strong>, computar <strong>menos del 75% de asistencia anual por materia</strong> y <strong>no asistir a los períodos de intensificación</strong>, la asignatura pasa a <strong>recursado obligatorio</strong> con independencia de la cantidad total de pendientes, salvo que en Transición 2026–2027 prime la definición del EDTE.
+                        </div>
+                    </div>
+                `;
+            }
+
+            const opciones = obtenerOpcionesEdte(superaTope, cantRecursar, cantComision, hayDecisionManualTransicion);
+            if (!opciones.some(o => o.id === opcionSeleccionadaId)) {
+                opcionSeleccionadaId = opciones[0].id;
+            }
+
+            document.getElementById('opcionesEdteContainer').innerHTML = opciones.map(op => {
+                const activa = op.id === opcionSeleccionadaId;
+                return `
+                    <div onclick="seleccionarOpcionEdte('${op.id}')" class="cursor-pointer p-4 rounded-xl border transition ${activa ? 'border-sky-600 bg-sky-50/70 shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300'}">
+                        <div class="flex items-start gap-3">
+                            <input type="radio" name="opcionEdte" ${activa ? 'checked' : ''} class="mt-1 text-sky-700 focus:ring-sky-500 pointer-events-none">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-bold text-sm text-slate-900">${op.titulo}</span>
+                                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${op.tagClass}">${op.tag}</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">${op.descripcion}</p>
+                            </div>
+                        </div>
+                        ${op.requiereSupervision ? `
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/80 flex items-start gap-1.5 text-[11px] font-semibold text-amber-800">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5"></i>
+                                <span>${op.textoSupervision}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('hintAsignacion').textContent = hayDecisionManualTransicion
+                ? 'En Transición 2027 podés elegir qué materia recursa y cuál va a Comisión Evaluadora (sin tope fijo; se emitirá aviso escrito si superás 4 en Comisión).'
+                : 'Encuadre automático según reglas vigentes.';
+
+            document.getElementById('desgloseMateriasContainer').innerHTML = evaluacionMaterias.map(m => {
+                const esRecursar = m.estado.startsWith('RECURSAR');
+                const puedeElegirTransicion = ciclo === 'TRANSICION_2027' && superaTope;
+
+                return `
+                    <div class="p-3.5 rounded-xl border ${esRecursar ? 'border-rose-200 bg-rose-50/40' : 'border-teal-200 bg-teal-50/40'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">${m.anio}</span>
+                                <span class="font-bold text-sm text-slate-900">${escapeHtml(m.nombre)}</span>
+                            </div>
+                            <p class="text-xs text-slate-600">${m.motivo}</p>
+                        </div>
+
+                        <div class="shrink-0 flex items-center gap-2">
+                            ${puedeElegirTransicion ? `
+                                <div class="inline-flex rounded-lg border border-slate-300 bg-white p-0.5 shadow-xs">
+                                    <button type="button" onclick="cambiarDecisionMateria('${m.id}', 'RECURSAR')"
+                                        class="px-2.5 py-1 text-xs font-semibold rounded-md transition ${esRecursar ? 'bg-rose-600 text-white' : 'text-slate-600 hover:bg-slate-100'}">
+                                        Recursar
+                                    </button>
+                                    <button type="button" onclick="cambiarDecisionMateria('${m.id}', 'COMISION')"
+                                        class="px-2.5 py-1 text-xs font-semibold rounded-md transition ${!esRecursar ? 'bg-teal-600 text-white' : 'text-slate-600 hover:bg-slate-100'}">
+                                        Com. Eval.
+                                    </button>
+                                </div>
+                            ` : `
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${esRecursar ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-teal-100 text-teal-800 border border-teal-200'}">
+                                    <i data-lucide="${esRecursar ? 'repeat' : 'award'}" class="w-3.5 h-3.5"></i>
+                                    ${esRecursar ? 'RECURSA' : 'COMISIÓN EVALUADORA'}
+                                </span>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderizarCronograma(ciclo, cantComision > 0);
+            lucide.createIcons();
+        }
+
+        function actualizarSimuladorCargaAnual(cantRecursar, anioSiguiente) {
+            const inputCursadas = document.getElementById('cantCursadasAnioSig');
+            const resumenTotal = document.getElementById('resumenCargaAnualTotal');
+            const badgeEstado = document.getElementById('badgeEstadoCargaAnual');
+            const detalle = document.getElementById('detalleSimuladorCargaAnual');
+
+            const cursadas = Math.max(0, parseInt(inputCursadas.value, 10) || 0);
+            const totalAnual = (anioSiguiente ? cursadas : 0) + cantRecursar;
+
+            resumenTotal.textContent = `${totalAnual} materias`;
+
+            if (totalAnual > 12) {
+                badgeEstado.textContent = `Supera el tope en ${totalAnual - 12}`;
+                badgeEstado.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+            } else {
+                badgeEstado.textContent = 'Dentro del tope de 12';
+                badgeEstado.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800';
+            }
+
+            if (!anioSiguiente) {
+                detalle.innerHTML = `El estudiante finalizó <strong>6° año</strong>: las <strong>${cantRecursar}</strong> materia(s) a recursar o en trayectoria específica no se suman a cursada regular de un año siguiente.`;
+            } else {
+                detalle.innerHTML = `Simulación para <strong>${anioSiguiente}° año</strong>: <strong>${cursadas}</strong> materia(s) nuevas a cursar + <strong>${cantRecursar}</strong> materia(s) a recursar = <strong>${totalAnual} materias anuales</strong> (límite curricular: 12).`;
+            }
+        }
+
+        function obtenerOpcionesEdte(superaTope, cantRecursar, cantComision, hayDecisionManualTransicion) {
+            const lista = [];
+
+            if (hayDecisionManualTransicion) {
+                lista.push({
+                    id: 'OP_TRANSICION_SELECCION',
+                    titulo: 'Selección EDTE de Recursadas + Comisión Evaluadora en Agosto (Transición 2027)',
+                    tag: 'Excepción Transición 2027',
+                    tagClass: 'bg-sky-100 text-sky-800',
+                    descripcion: `Por disposición transitoria 2027 (Disp. 40/26 apartado 3 y Res. 1650/24 Anexo 5 p. 13), el EDTE define qué materias recursará (${cantRecursar}) y habilita las restantes (${cantComision}, sin tope fijo) para acreditar en la Comisión Evaluadora de la 1ª semana tras el receso invernal de agosto con apoyo previo FORTE.`,
+                    requiereSupervision: false
+                });
+            } else if (!superaTope && cantRecursar === 0) {
+                lista.push({
+                    id: 'OP_CURSA_Y_COMISION',
+                    titulo: 'Promoción y Cursada Regular + Comisión Evaluadora Institucional',
+                    tag: 'Regla General (2.2)',
+                    tagClass: 'bg-teal-100 text-teal-800',
+                    descripcion: `El estudiante cursa la totalidad de las materias del nuevo año lectivo. Las ${cantComision} materia(s) pendiente(s) se acreditan en Comisiones Evaluadoras Institucionales (basadas en NAP/contenidos prioritarios) con espacios previos de acompañamiento (FORTE, CITE, EOE).`,
+                    requiereSupervision: false
+                });
+            } else if (!superaTope && cantRecursar > 0) {
+                lista.push({
+                    id: 'OP_MIXTA_EXCEPCION',
+                    titulo: cantComision > 0 ? 'Cursada Regular + Recursado Obligatorio + Comisión Evaluadora' : 'Cursada Regular + Recursado Obligatorio por Presencialidad',
+                    tag: 'Regla Estricta Presencialidad',
+                    tagClass: 'bg-amber-100 text-amber-800',
+                    descripcion: `Por la regla estricta de presencialidad (menos del 75% de asistencia anual y sin asistencia a intensificación), el estudiante recursa obligatoriamente las ${cantRecursar} materia(s) alcanzada(s)${cantComision > 0 ? ` y rinde las ${cantComision} restante(s) en Comisión Evaluadora` : ''}.`,
+                    requiereSupervision: false
+                });
+            } else {
+                lista.push({
+                    id: 'OP_PLENO_COMBINADO',
+                    titulo: 'Recursado Total de Pendientes + Materias del Año Siguiente (Organización EDTE)',
+                    tag: 'Regla General (2.3)',
+                    tagClass: 'bg-rose-100 text-rose-800',
+                    descripcion: `Al adeudar ${cantRecursar} materias (más de 4) en Régimen Pleno 2028+, recursa la totalidad de las pendientes y cursa materias del año siguiente según la organización horaria definida por el EDTE (sin superar el tope de 12 materias anuales).`,
+                    requiereSupervision: false
+                });
+            }
+
+            if (cantRecursar > 0) {
+                lista.push({
+                    id: 'OP_EXCLUSIVO_RECURSADO',
+                    titulo: 'Trayectoria Exclusiva de Recursado (Sin cursar materias del año siguiente)',
+                    tag: 'Opción EDTE fundamentada (2.3)',
+                    tagClass: 'bg-amber-100 text-amber-800',
+                    descripcion: `El estudiante dedica el ciclo lectivo exclusivamente a recursar las ${cantRecursar} materia(s) pendiente(s), complementando la carga horaria semanal con propuestas específicas de acompañamiento académico y orientación.`,
+                    requiereSupervision: true,
+                    textoSupervision: 'Requiere fundamentación del EDTE, elevación al Inspector/a de Área (Anexo 2 inc. 25) y aprobación de Supervisión (Disp. 40/26 p. 2.3).'
+                });
+            }
+
+            lista.push({
+                id: 'OP_PROYECTO_VULNERABILIDAD',
+                titulo: 'Proyecto y Acompañamiento Pedagógico Específico (EDTE + EOE)',
+                tag: 'Trayectorias discontinuas (2.3 / Anexo 2 inc. 26)',
+                tagClass: 'bg-indigo-100 text-indigo-800',
+                descripcion: 'Formulación de propuesta pedagógica personalizada articulada entre EDTE y Equipo de Orientación Escolar (EOE) ante situaciones de vulnerabilidad escolar, no acreditación prolongada o trayectorias discontinuas.',
+                requiereSupervision: true,
+                textoSupervision: 'En situaciones excepcionales y acreditables, requiere elevación a Jefatura Regional vía Jefatura Distrital para convalidación de la Dirección de Nivel (Anexo 2 inc. 26).'
+            });
+
+            return lista;
+        }
+
+        function renderizarListaIzquierda() {
+            const container = document.getElementById('listaMateriasContainer');
+            const countEl = document.getElementById('countMaterias');
+            const btnLimpiar = document.getElementById('btnLimpiar');
+            countEl.textContent = materias.length;
+
+            if (materias.length === 0) {
+                btnLimpiar.classList.add('hidden');
+                container.innerHTML = `<div class="text-xs text-slate-400 text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">Aún no cargaste materias pendientes.</div>`;
+                return;
+            }
+
+            btnLimpiar.classList.remove('hidden');
+            container.innerHTML = materias.map(m => {
+                const badgeAsistencia = m.abandonoPresencialidad
+                    ? '<span class="text-[10px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded">28+ faltas inst. → menos del 75% en materia y sin intensif.</span>'
+                    : '<span class="text-[10px] font-medium text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded">Trayectoria sostenida (75%+ o intensif.)</span>';
+
+                return `
+                    <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">${m.anio}</span>
+                                <span class="text-xs font-bold text-slate-800 truncate">${escapeHtml(m.nombre)}</span>
+                            </div>
+                            <div class="mt-1">${badgeAsistencia}</div>
+                        </div>
+                        <button type="button" onclick="eliminarMateria('${m.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0" title="Quitar materia">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarCronograma(ciclo, hayComision) {
+            const anioCursado = parseInt(document.getElementById('anioCursado').value, 10);
+            const container = document.getElementById('cronogramaContainer');
+            let cards = [];
+
+            if (ciclo === 'TRANSICION_2027') {
+                cards.push({
+                    titulo: 'Marzo y Mayo 2027 (Planificación y Supervisión)',
+                    desc: 'En marzo se consolida la nómina tras febrero y se eleva el Acta EDTE al Inspector/a de Área (Anexo 2 inc. 25); en mayo se eleva a Supervisión la planificación de Comisiones Evaluadoras.'
+                });
+                if (hayComision) {
+                    cards.push({
+                        titulo: 'Comisión Evaluadora Agosto 2027',
+                        desc: '1ª semana tras el receso invernal, con espacios previos de acompañamiento y enseñanza con módulos FORTE.'
+                    });
+                }
+            } else if (hayComision) {
+                cards.push({
+                    titulo: 'Comisiones Evaluadoras (Ago / Dic / Mar)',
+                    desc: 'Instancias de 1 semana (agosto y marzo) y al cierre de cursada (diciembre), con acompañamiento previo en julio y febrero.'
+                });
+            }
+
+            if (anioCursado === 6) {
+                cards.push({
+                    titulo: 'Egreso de 6° Año con Pendientes',
+                    desc: 'Las materias cursadas en 6° año tienen intensificación en diciembre y febrero/marzo y luego Comisiones Evaluadoras desde abril (Anexo 5 inc. 16 y 21). Las pendientes previas de 1° a 5° van directo a Comisión Evaluadora Institucional con acompañamiento previo (Disp. 40/26 p. 2.2).'
+                });
+            }
+
+            cards.push({
+                titulo: 'Conformación de EDTE y Comisión (Anexo 2 inc. 22 / Disp. 40/26 p. 2.6)',
+                desc: 'EDTE: Conducción, EOE, 1 preceptor/a cada 6 secciones, 1 docente cada 6 secciones y referentes designados. Comisión: Docente del área + perfiles de acompañamiento.'
+            });
+
+            container.innerHTML = cards.map(c => `
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <div class="font-bold text-xs text-sky-900 mb-1">${c.titulo}</div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">${c.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        function obtenerDatosDictamen() {
+            const studentName = document.getElementById('studentName').value.trim() || 'Sin especificar';
+            const anioCursado = parseInt(document.getElementById('anioCursado').value, 10);
+            const anioSiguiente = anioCursado < 6 ? anioCursado + 1 : null;
+            const esCicloBasico = anioCursado <= 3;
+            const orientacionVal = document.querySelector('input[name="orientacion"]:checked').value;
+            const labelOrientacion = esCicloBasico
+                ? 'Ciclo Básico'
+                : (orientacionVal === 'CS_SOCIALES' ? 'Ciclo Superior — Ciencias Sociales' : 'Ciclo Superior — Ciencias Naturales');
+            const ciclo = document.querySelector('input[name="ciclo"]:checked').value;
+            const superaTope = materias.length > 4;
+            const hayDecisionManualTransicion = ciclo === 'TRANSICION_2027' && superaTope && materias.length > 0;
+
+            const cantRecursarCalc = materias.filter(m => {
+                if (ciclo === 'TRANSICION_2027') {
+                    if (superaTope) return m.decisionEdteTransicion === 'RECURSAR';
+                    return m.abandonoPresencialidad;
+                }
+                if (m.abandonoPresencialidad) return true;
+                return superaTope;
+            }).length;
+
+            const cantComisionCalc = materias.length - cantRecursarCalc;
+            const superaTopeComisionTransicion = hayDecisionManualTransicion && cantComisionCalc > 4;
+
+            const opciones = obtenerOpcionesEdte(superaTope, cantRecursarCalc, cantComisionCalc, hayDecisionManualTransicion);
+            const opcionElegida = opciones.find(o => o.id === opcionSeleccionadaId) || opciones[0];
+
+            const detalleMaterias = materias.map(m => {
+                let destino = '';
+                let esRecursar = false;
+                if (ciclo === 'TRANSICION_2027') {
+                    if (superaTope) {
+                        esRecursar = m.decisionEdteTransicion === 'RECURSAR';
+                        destino = !esRecursar
+                            ? 'COMISIÓN EVALUADORA INSTITUCIONAL (Excepción Transición 2027 — sin tope fijo)'
+                            : 'RECURSA (Definición EDTE Transición 2027)';
+                    } else if (m.abandonoPresencialidad) {
+                        esRecursar = true;
+                        destino = 'RECURSA (Regla de presencialidad e intensificación — Anexo 4 inc. 7, 10 y 11 y Disp. 40/26 p. 2.3)';
+                    } else {
+                        destino = 'COMISIÓN EVALUADORA INSTITUCIONAL';
+                    }
+                } else if (m.abandonoPresencialidad) {
+                    esRecursar = true;
+                    destino = 'RECURSA (Obligatorio: alcanzó/superó 28 faltas institucionales, luego menos del 75% de asistencia en la materia y sin asistencia a intensificación — Anexo 4 inc. 7, 10 y 11 y Disp. 40/26 p. 2.3)';
+                } else if (!superaTope) {
+                    destino = 'COMISIÓN EVALUADORA INSTITUCIONAL';
+                } else {
+                    esRecursar = true;
+                    destino = 'RECURSA (Totalidad de pendientes - Régimen Pleno 2028+)';
+                }
+                return { anio: m.anio, nombre: m.nombre, destino, esRecursar };
+            });
+
+            return {
+                studentName,
+                anioCursado,
+                anioSiguiente,
+                labelOrientacion,
+                cicloLabel: ciclo === 'TRANSICION_2027' ? 'Transición 2026–2027' : 'Régimen Pleno 2028+',
+                totalPendientes: materias.length,
+                cantRecursarCalc,
+                cantComisionCalc,
+                superaTopeComisionTransicion,
+                opcionElegida,
+                detalleMaterias
+            };
+        }
+
+        function abrirVistaActa() {
+            if (materias.length === 0) return;
+            const d = obtenerDatosDictamen();
+            const fechaHoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const filasTabla = d.detalleMaterias.map((m, idx) => `
+                <tr>
+                    <td class="border border-slate-300 px-3 py-2 text-center text-xs">${idx + 1}</td>
+                    <td class="border border-slate-300 px-3 py-2 text-center text-xs font-bold">${escapeHtml(m.anio)}</td>
+                    <td class="border border-slate-300 px-3 py-2 text-xs font-bold">${escapeHtml(m.nombre)}</td>
+                    <td class="border border-slate-300 px-3 py-2 text-xs font-semibold ${m.esRecursar ? 'text-rose-800' : 'text-teal-800'}">${escapeHtml(m.destino)}</td>
+                </tr>
+            `).join('');
+
+            const avisoSuperaTopeActa = d.superaTopeComisionTransicion
+                ? `<div class="p-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-950 text-xs mb-5">
+                    <strong>Aviso escrito (Transición 2026–2027):</strong> Se asignaron <strong>${d.cantComisionCalc} materias</strong> a Comisión Evaluadora Institucional (sin tope fijo en Transición 2026–2027 según Disp. 40/26, apartado 3 y Res. 1650/24, Anexo 5 p. 13; superando las 4 materias de referencia), quedando asentada en este Acta la fundamentación pedagógica del EDTE.
+                </div>`
+                : '';
+
+            const circuitoSupervisionTexto = d.opcionElegida.requiereSupervision
+                ? `Se deja constancia de que la presente propuesta excepcional requiere fundamentación pedagógica, elevación al Inspector/a de Área para su rúbrica (Res. 1650/24, Anexo 2 inc. 25) y remisión vía Jefatura Distrital / Jefatura Regional para su convalidación por la Dirección de Nivel (Anexo 2 inc. 26).`
+                : `En cumplimiento del Anexo 2 inc. 25 de la Res. 1650/24, se deja constancia en el Libro de Actas del EDTE de la E.E.S. N° 6 y se eleva copia de la presente al Inspector/a de Área para su conocimiento y rúbrica.`;
+
+            document.getElementById('contenidoActaDocumento').innerHTML = `
+                <div class="text-[11px] text-slate-500 border-b-2 border-sky-900 pb-2 mb-4">
+                    <div class="font-bold text-sky-950">DIRECCIÓN GENERAL DE CULTURA Y EDUCACIÓN — PROVINCIA DE BUENOS AIRES</div>
+                    <div>E.E.S. N° 6 • Nivel Secundario • Encuadre Normativo: Resolución N° 1650/24 y Adecuaciones Disposición N° 40/26</div>
+                </div>
+
+                <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+                    <h2 class="text-lg font-extrabold text-slate-900 uppercase">Acta de Definición de Trayectoria Educativa (EDTE)</h2>
+                    <span class="text-xs text-slate-500">Fecha: <strong>${fechaHoy}</strong></span>
+                </div>
+
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1 text-xs mb-5">
+                    <p><strong>Estudiante:</strong> ${escapeHtml(d.studentName)}</p>
+                    <p><strong>Trayecto:</strong> Educación Secundaria — ${escapeHtml(d.labelOrientacion)}</p>
+                    <p><strong>Ciclo de aplicación:</strong> ${escapeHtml(d.cicloLabel)}</p>
+                    <p><strong>Situación académica:</strong> Finalizó ${d.anioCursado}° Año (${d.anioSiguiente ? `Avanza a ${d.anioSiguiente}° Año` : 'Egreso con pendientes'}) — Total de materias pendientes: <strong>${d.totalPendientes}</strong></p>
+                </div>
+
+                ${avisoSuperaTopeActa}
+
+                <h3 class="text-sm font-bold text-sky-950 bg-slate-100 px-3 py-1.5 border-l-4 border-sky-700 mb-2">1. Decisión de Trayectoria Adoptada por el EDTE</h3>
+                <p class="text-xs font-bold text-slate-900 mb-1">${escapeHtml(d.opcionElegida.titulo)}</p>
+                <p class="text-xs text-slate-700 leading-relaxed mb-5">${escapeHtml(d.opcionElegida.descripcion)}</p>
+
+                <h3 class="text-sm font-bold text-sky-950 bg-slate-100 px-3 py-1.5 border-l-4 border-sky-700 mb-2">2. Detalle y Asignación por Materia Pendiente</h3>
+                <table class="w-full border-collapse mb-5">
+                    <thead>
+                        <tr class="bg-sky-900 text-white text-xs">
+                            <th class="border border-sky-900 px-2 py-1.5 text-center w-10">N°</th>
+                            <th class="border border-sky-900 px-2 py-1.5 text-center w-16">Año</th>
+                            <th class="border border-sky-900 px-3 py-1.5 text-left">Materia / Espacio Curricular</th>
+                            <th class="border border-sky-900 px-3 py-1.5 text-left">Instancia de Acreditación / Recursado</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filasTabla}</tbody>
+                </table>
+
+                <h3 class="text-sm font-bold text-sky-950 bg-slate-100 px-3 py-1.5 border-l-4 border-sky-700 mb-2">3. Observaciones, Acuerdos Institucionales y Circuito de Supervisión</h3>
+                <p class="text-[11px] text-slate-600 mb-2 leading-relaxed">${circuitoSupervisionTexto}</p>
+                <div contenteditable="true" class="border border-slate-300 rounded p-2.5 min-h-[60px] text-xs text-slate-700 mb-8 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    Espacios de acompañamiento (FORTE / CITE / EOE), acuerdos horarios o fundamentación pedagógica:
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 pt-6 text-center text-[11px] text-slate-600">
+                    <div>
+                        <div class="border-t border-slate-400 pt-1">
+                            <strong>Equipo EDTE — E.E.S. N° 6</strong><br>
+                            <span class="text-[10px] text-slate-500">Conducción, EOE, Docentes y Preceptores designados</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="border-t border-slate-400 pt-1">
+                            <strong>Notificación Estudiante</strong><br>
+                            <span class="text-[10px] text-slate-500">Firma y aclaración</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="border-t border-slate-400 pt-1">
+                            <strong>Notificación Adulto/a Responsable</strong><br>
+                            <span class="text-[10px] text-slate-500">Firma, aclaración y DNI</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalVistaActa').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function cerrarVistaActa() {
+            document.getElementById('modalVistaActa').classList.add('hidden');
+        }
+
+        function copiarActaEnriquecida() {
+            const contenedor = document.getElementById('contenidoActaDocumento');
+            if (!contenedor) return;
+            const seleccion = window.getSelection();
+            const rango = document.createRange();
+            rango.selectNodeContents(contenedor);
+            seleccion.removeAllRanges();
+            seleccion.addRange(rango);
+            try {
+                document.execCommand('copy');
+                mostrarToast('Acta copiada con formato. Pegala directo en Word o Google Docs (Ctrl+V)');
+            } catch (err) {
+                mostrarToast('Seleccioná el texto del acta y copialo con Ctrl+C');
+            }
+            seleccion.removeAllRanges();
+        }
+
+        function descargarArchivoDocDataUri() {
+            const d = obtenerDatosDictamen();
+            const nombreArchivoBase = d.studentName !== 'Sin especificar'
+                ? d.studentName.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s_-]/g, '').trim().replace(/\s+/g, '_')
+                : 'Estudiante_Sin_Nombre';
+
+            const interior = document.getElementById('contenidoActaDocumento').innerHTML;
+            const htmlWord = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head><meta charset='utf-8'><title>Acta EDTE</title></head>
+                <body>${interior}</body>
+                </html>
+            `;
+
+            const dataUri = 'data:application/msword;charset=utf-8,' + encodeURIComponent('\ufeff' + htmlWord);
+            const enlace = document.createElement('a');
+            enlace.href = dataUri;
+            enlace.download = `Acta_EDTE_EES6_${nombreArchivoBase}.doc`;
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            mostrarToast('Descargando Acta_EDTE_EES6_' + nombreArchivoBase + '.doc');
+        }
+
+        function imprimirActaModal() {
+            const interior = document.getElementById('contenidoActaDocumento').innerHTML;
+            const ventana = window.open('', '_blank', 'width=850,height=900');
+            if (ventana) {
+                ventana.document.write(`<!DOCTYPE html><html><head><title>Acta EDTE</title></head><body style="padding:24px;">${interior}</body></html>`);
+                ventana.document.close();
+                ventana.focus();
+                ventana.print();
+            } else {
+                window.print();
+            }
+        }
+
+        function exportarActa() {
+            if (materias.length === 0) return;
+            const d = obtenerDatosDictamen();
+
+            let texto = `ACTA DE DEFINICIÓN DE TRAYECTORIA EDUCATIVA (EDTE) — E.E.S. N° 6\n`;
+            texto += `Normativa: Res. 1650/24 y Adecuaciones Disp. 40/26\n`;
+            texto += `------------------------------------------------------------\n`;
+            texto += `Estudiante: ${d.studentName}\n`;
+            texto += `Trayecto: Educación Secundaria — ${d.labelOrientacion}\n`;
+            texto += `Ciclo de aplicación: ${d.cicloLabel}\n`;
+            texto += `Situación: Finalizó ${d.anioCursado}° Año (${d.anioSiguiente ? `Avanza a ${d.anioSiguiente}° Año` : 'Egreso con pendientes'}) | Total materias pendientes: ${d.totalPendientes}\n`;
+            if (d.superaTopeComisionTransicion) {
+                texto += `AVISO ESCRITO: Se asignaron ${d.cantComisionCalc} materias a Comisión Evaluadora Institucional (sin tope fijo en Transición 2026–2027; supera 4 de referencia).\n`;
+            }
+            texto += `\nDECISIÓN DE TRAYECTORIA ADOPTADA:\n`;
+            texto += `• ${d.opcionElegida.titulo}\n`;
+            texto += `• Detalle: ${d.opcionElegida.descripcion}\n\n`;
+            texto += `DETALLE POR MATERIA ADEUDADA:\n`;
+
+            d.detalleMaterias.forEach((m, idx) => {
+                texto += `${idx + 1}. [${m.anio}] ${m.nombre} -> ${m.destino}\n`;
+            });
+
+            const textArea = document.createElement('textarea');
+            textArea.value = texto;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                mostrarToast('Dictamen EDTE copiado al portapapeles');
+            } catch (err) {
+                mostrarToast('No se pudo copiar automáticamente');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Dictado por voz y procesamiento de texto
+        function procesarComandoTextoDebounced() {
+            clearTimeout(timerProcesarVoz);
+            timerProcesarVoz = setTimeout(() => {
+                if (document.getElementById('transcripcionVoz').value.trim().length > 4) {
+                    procesarComandoTexto(true);
+                }
+            }, 450);
+        }
+
+        function alternarReconocimientoVoz() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                mostrarToast('Tu navegador no soporta dictado por voz. Podés escribir el comando y tocar Cargar ahora.');
+                document.getElementById('transcripcionVoz').focus();
+                return;
+            }
+
+            if (escuchandoVoz && reconocimiento) {
+                escuchandoVoz = false;
+                try { reconocimiento.stop(); } catch (e) {}
+                restaurarBotonVoz();
+                if (document.getElementById('transcripcionVoz').value.trim().length > 0) procesarComandoTexto(false);
+                return;
+            }
+
+            reconocimiento = new SpeechRecognition();
+            reconocimiento.lang = 'es-AR';
+            reconocimiento.continuous = true;
+            reconocimiento.interimResults = true;
+
+            const btn = document.getElementById('btnIniciarVoz');
+            const textoBtn = document.getElementById('textoMicBtn');
+            const badge = document.getElementById('estadoMicrofonoBadge');
+            const textarea = document.getElementById('transcripcionVoz');
+            let transcripcionFinal = '';
+
+            reconocimiento.onstart = () => {
+                escuchandoVoz = true;
+                btn.classList.remove('bg-rose-600', 'hover:bg-rose-700');
+                btn.classList.add('bg-amber-600', 'hover:bg-amber-700', 'animate-pulse');
+                textoBtn.textContent = 'Escuchando... (Tocar para detener y cargar)';
+                badge.textContent = 'Grabando';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700';
+                textarea.value = '';
+            };
+
+            reconocimiento.onresult = (event) => {
+                let interino = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) transcripcionFinal += event.results[i][0].transcript + ' ';
+                    else interino += event.results[i][0].transcript;
+                }
+                textarea.value = (transcripcionFinal + interino).trim();
+                procesarComandoTextoDebounced();
+            };
+
+            reconocimiento.onerror = () => {
+                escuchandoVoz = false;
+                restaurarBotonVoz();
+            };
+
+            reconocimiento.onend = () => {
+                escuchandoVoz = false;
+                restaurarBotonVoz();
+                if (textarea.value.trim().length > 0) procesarComandoTexto(false);
+            };
+
+            try { reconocimiento.start(); } catch (e) { escuchandoVoz = false; restaurarBotonVoz(); }
+        }
+
+        function restaurarBotonVoz() {
+            const btn = document.getElementById('btnIniciarVoz');
+            const textoBtn = document.getElementById('textoMicBtn');
+            const badge = document.getElementById('estadoMicrofonoBadge');
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700', 'animate-pulse');
+            btn.classList.add('bg-rose-600', 'hover:bg-rose-700');
+            textoBtn.textContent = 'Dictar caso por micrófono';
+            badge.textContent = 'Listo';
+            badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600';
+        }
+
+        function normalizarTexto(str) {
+            return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        function detectarAnioEnTexto(texto) {
+            if (!texto) return null;
+            if (/\b(1|1ro|1er|primero|primer)\b/.test(texto)) return 1;
+            if (/\b(2|2do|segundo)\b/.test(texto)) return 2;
+            if (/\b(3|3ro|3er|tercero|tercer)\b/.test(texto)) return 3;
+            if (/\b(4|4to|cuarto)\b/.test(texto)) return 4;
+            if (/\b(5|5to|quinto)\b/.test(texto)) return 5;
+            if (/\b(6|6to|sexto)\b/.test(texto)) return 6;
+            return null;
+        }
+
+        const CATALOGO_VOZ_MATERIAS = [
+            { nombre: 'Prácticas del Lenguaje', keys: ['practicas del lenguaje', 'practicas', 'lengua'] },
+            { nombre: 'Matemática', keys: ['matematica', 'matematicas'] },
+            { nombre: 'Ciencias Sociales', keys: ['ciencias sociales'] },
+            { nombre: 'Ciencias Naturales', keys: ['ciencias naturales', 'naturales'] },
+            { nombre: 'Educación Artística', keys: ['educacion artistica', 'artistica'] },
+            { nombre: 'Educación Física', keys: ['educacion fisica', 'gimnasia'] },
+            { nombre: 'Inglés', keys: ['ingles'] },
+            { nombre: 'Construcción de Ciudadanía', keys: ['construccion de ciudadania', 'ciudadania'] },
+            { nombre: 'Historia', keys: ['historia'] },
+            { nombre: 'Geografía', keys: ['geografia'] },
+            { nombre: 'Biología', keys: ['biologia'] },
+            { nombre: 'Físico-Química', keys: ['fisico quimica', 'fisico-quimica', 'fisicoquimica'] },
+            { nombre: 'Literatura', keys: ['literatura'] },
+            { nombre: 'Introducción a la Física', keys: ['introduccion a la fisica', 'fisica'] },
+            { nombre: 'Introducción a la Química', keys: ['introduccion a la quimica', 'quimica'] },
+            { nombre: 'Salud y Adolescencia', keys: ['salud y adolescencia', 'salud'] },
+            { nombre: 'NTICx', keys: ['nticx', 'nuevas tecnologias'] },
+            { nombre: 'Psicología', keys: ['psicologia'] },
+            { nombre: 'Política y Ciudadanía', keys: ['politica y ciudadania', 'politica'] },
+            { nombre: 'Sociología', keys: ['sociologia'] },
+            { nombre: 'Trabajo y Ciudadanía', keys: ['trabajo y ciudadania', 'trabajo'] },
+            { nombre: 'Arte', keys: ['arte'] },
+            { nombre: 'Filosofía', keys: ['filosofia'] },
+            { nombre: 'Economía Política', keys: ['economia politica', 'economia'] }
+        ];
+
+        function procesarComandoTexto(esSilencioso = false) {
+            const rawText = document.getElementById('transcripcionVoz').value.trim();
+            if (!rawText) {
+                if (!esSilencioso) mostrarToast('Dictá o escribí una instrucción primero.');
+                return;
+            }
+
+            const norm = normalizarTexto(rawText);
+            const resumenCambios = [];
+
+            const parteContexto = norm.split(/\b(debe|adeuda|tiene pendiente|materias pendientes|le queda)\b/)[0];
+            let anioCursadoDetectado = detectarAnioEnTexto(parteContexto);
+            if (anioCursadoDetectado) {
+                document.getElementById('anioCursado').value = String(anioCursadoDetectado);
+                resumenCambios.push(`Cursó: ${anioCursadoDetectado}° Año`);
+            } else {
+                anioCursadoDetectado = parseInt(document.getElementById('anioCursado').value, 10);
+            }
+
+            gestionarCambioAnioCursado();
+
+            if (anioCursadoDetectado > 3) {
+                if (/\b(naturales|ciencias naturales)\b/.test(norm)) {
+                    document.querySelector('input[name="orientacion"][value="CS_NATURALES"]').checked = true;
+                    resumenCambios.push('Orientación: Ciencias Naturales');
+                } else if (/\b(sociales|ciencias sociales)\b/.test(norm)) {
+                    document.querySelector('input[name="orientacion"][value="CS_SOCIALES"]').checked = true;
+                    resumenCambios.push('Orientación: Ciencias Sociales');
+                }
+            }
+
+            if (/\b(2028|pleno|regimen nuevo|definitivo)\b/.test(norm)) {
+                document.querySelector('input[name="ciclo"][value="PLENO_2028"]').checked = true;
+                resumenCambios.push('Ciclo: Régimen Pleno 2028+');
+            } else if (/\b(transicion|2027|2026)\b/.test(norm)) {
+                document.querySelector('input[name="ciclo"][value="TRANSICION_2027"]').checked = true;
+                resumenCambios.push('Ciclo: Transición 2026→2027');
+            }
+
+            const sinPresencialidadGlobal = /\b(sin asistencia|no alcanzo el 75|menos del 75|28 faltas|28 inasistencias|abandono|sin presencialidad|tampoco asistio)\b/.test(norm)
+                && !/\b(con el 75|alcanzo el 75|tiene el 75|asistencia regular|menos de 28|asistencia sostenida)\b/.test(norm);
+
+            const nuevasMaterias = [];
+            const fragmentosDebe = norm.split(/\b(?:y\s+|e\s+)?(?:debe|adeuda|pendientes?|le queda[n]?)\b/).slice(1);
+            const textoMateriasBase = fragmentosDebe.length > 0 ? fragmentosDebe.join(' debe ') : norm;
+            const fragLimpio = textoMateriasBase.split(/\b(?:cargamelo|cargalo|ponelo|con el regimen|en regimen|por favor)\b/)[0];
+            const subBloques = fragLimpio.split(/\s+(?:y|e)\s+(?=(?:debe|adeuda|tiene|tambien|le queda|historia|geografia|biologia|matematica|practicas|literatura|ingles|fisica|quimica|arte|educacion|construccion|politica|trabajo|salud|nticx|psicologia|sociologia|economia|filosofia|ciencias)\b)/);
+
+            subBloques.forEach(bloque => {
+                if (!bloque.trim()) return;
+                const matchAnioBloque = bloque.match(/\bde\s+(1|1ro|1er|primero|primer|2|2do|segundo|3|3ro|3er|tercero|tercer|4|4to|cuarto|5|5to|quinto|6|6to|sexto)(?:\s+ano)?\b/);
+                const anioMat = matchAnioBloque ? detectarAnioEnTexto(matchAnioBloque[1]) : anioCursadoDetectado;
+                let textoRestante = bloque;
+
+                CATALOGO_VOZ_MATERIAS.forEach(item => {
+                    for (const key of item.keys) {
+                        const regex = new RegExp(`\\b${key}\\b`, 'g');
+                        if (regex.test(textoRestante)) {
+                            if (!nuevasMaterias.some(m => m.nombre === item.nombre && m.anio === `${anioMat}°`)) {
+                                nuevasMaterias.push({
+                                    id: 'mat_voz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                                    nombre: item.nombre,
+                                    anio: `${anioMat}°`,
+                                    abandonoPresencialidad: sinPresencialidadGlobal,
+                                    decisionEdteTransicion: 'RECURSAR'
+                                });
+                            }
+                            textoRestante = textoRestante.replace(regex, ' ');
+                            break;
+                        }
+                    }
+                });
+            });
+
+            if (nuevasMaterias.length > 0) {
+                materias = nuevasMaterias;
+                resumenCambios.push(`${nuevasMaterias.length} materia(s) cargada(s)`);
+            }
+
+            document.getElementById(sinPresencialidadGlobal ? 'condAbandono' : 'condTrayectoriaSostenida').checked = true;
+            recalcularTodo();
+
+            const feedback = document.getElementById('feedbackVoz');
+            feedback.classList.remove('hidden');
+            feedback.innerHTML = `<strong>Datos cargados:</strong> ${resumenCambios.join(' • ') || 'Contexto actualizado'}.`;
+            if (!esSilencioso) mostrarToast('Caso cargado desde voz/texto');
+        }
+
+        // Documentos Drive
+        const ENLACES_DRIVE_ORIGINALES = {
+            DISP_40_26: {
+                titulo: 'Adecuaciones y Modificaciones del Régimen Académico — Disp. 40/26',
+                subtitulo: 'Nivel Secundario • E.E.S. N° 6',
+                urlVista: 'https://drive.google.com/file/d/1tI6dXHs1ImN1hpzu5W1EYWD0YmN2xDnS/view?usp=drivesdk',
+                urlPreview: 'https://drive.google.com/file/d/1tI6dXHs1ImN1hpzu5W1EYWD0YmN2xDnS/preview',
+                urlDescargaDirecta: 'https://drive.google.com/uc?export=download&id=1tI6dXHs1ImN1hpzu5W1EYWD0YmN2xDnS',
+                nombreArchivo: 'Disp_40_26_Adecuaciones_Regimen_Academico.pdf'
+            },
+            RES_1650_24: {
+                titulo: 'Régimen Académico para la Educación Secundaria — Res. 1650/24',
+                subtitulo: 'Provincia de Buenos Aires • Anexos 1 a 8',
+                urlVista: 'https://drive.google.com/file/d/1u51STd15Ma4VD0MWdenWphDKmnvL-uZG/view?usp=drivesdk',
+                urlPreview: 'https://drive.google.com/file/d/1u51STd15Ma4VD0MWdenWphDKmnvL-uZG/preview',
+                urlDescargaDirecta: 'https://drive.google.com/uc?export=download&id=1u51STd15Ma4VD0MWdenWphDKmnvL-uZG',
+                nombreArchivo: 'Res_1650_24_Regimen_Academico_PBA.pdf'
+            }
+        };
+
+        let documentoActivoId = 'DISP_40_26';
+
+        function toggleModalNormativa() {
+            document.getElementById('modalNormativa').classList.toggle('hidden');
+        }
+
+        function abrirVisorDocumento(docId) {
+            documentoActivoId = ENLACES_DRIVE_ORIGINALES[docId] ? docId : 'DISP_40_26';
+            const cfg = ENLACES_DRIVE_ORIGINALES[documentoActivoId];
+            document.getElementById('tituloVisorDoc').textContent = cfg.titulo;
+            document.getElementById('subtituloVisorDoc').textContent = cfg.subtitulo;
+            document.getElementById('paginasPdfContainer').innerHTML = `
+                <div class="w-full h-full min-h-[68vh] flex flex-col gap-2">
+                    <iframe src="${escapeHtml(cfg.urlPreview)}" class="w-full flex-grow min-h-[65vh] rounded-xl bg-white shadow-2xl border-0" allow="autoplay"></iframe>
+                    <div class="bg-slate-900/95 text-slate-200 px-3.5 py-2 rounded-xl text-[11px] flex flex-wrap items-center justify-between gap-2 border border-slate-700">
+                        <span>Mostrando el PDF oficial desde Google Drive.</span>
+                        <a href="${escapeHtml(cfg.urlVista)}" target="_blank" rel="noopener noreferrer" class="text-sky-300 hover:text-sky-200 font-bold underline">Abrir en pestaña de Drive</a>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalVisorDocumento').classList.remove('hidden');
+        }
+
+        function cerrarVisorDocumento() {
+            document.getElementById('modalVisorDocumento').classList.add('hidden');
+        }
+
+        function cambiarPestanaDocumento(docId) {
+            abrirVisorDocumento(docId);
+        }
+
+        function descargarDocumentoPdfDirecto(docId) {
+            const cfg = ENLACES_DRIVE_ORIGINALES[docId] || ENLACES_DRIVE_ORIGINALES[documentoActivoId];
+            const enlace = document.createElement('a');
+            enlace.href = cfg.urlDescargaDirecta;
+            enlace.target = '_blank';
+            enlace.rel = 'noopener noreferrer';
+            enlace.download = cfg.nombreArchivo;
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            mostrarToast('Abriendo descarga del PDF oficial...');
+        }
+
+        function descargarDocumentoActual() {
+            descargarDocumentoPdfDirecto(documentoActivoId);
+        }
+
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = mensaje;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        gestionarCambioAnioCursado();
+    </script>
+</body>
+</html>
